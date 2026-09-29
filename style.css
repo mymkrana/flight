@@ -1,14 +1,4 @@
-/* ============================================================
-   NOWTOBOOK — Main Master Stylesheet
-   Import ORDER matters! Kabhi change na karo.
-     1. variables.css  → sabse pehle (dusri files isko use karti hain)
-     2. base.css       → reset + typography
-     3. components.css → shared components (navbar, footer, search)
-     4. home.css       → page-specific
-     5. results.css    → page-specific
-     6. booking.css    → page-specific
-   ============================================================ */
-
+/* NOWTOBOOK — Master Stylesheet */
 @import url("css/variables.css");
 @import url("css/base.css");
 @import url("css/components.css");

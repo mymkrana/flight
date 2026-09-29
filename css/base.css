@@ -1,8 +1,7 @@
-/* ============================================================
-   NOWTOBOOK — Base Styles & Typography
-   ============================================================ */
-
-*, *::before, *::after {
+/* NOWTOBOOK — Base Styles & Typography */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -14,7 +13,7 @@ html {
 
 body {
   font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px;
+  font-size: var(--fs-xl);
   color: var(--text-primary);
   background: var(--white);
   -webkit-font-smoothing: antialiased;
@@ -41,32 +40,37 @@ img {
   margin-left: auto;
 }
 
-@media (min-width: 1920px) {
-  .container {
-    padding-right: 15%;
-    padding-left: 15%;
-  }
-}
-
-@media (max-width: 767px) {
-  .container {
-    padding-right: 16px;
-    padding-left: 16px;
-  }
-}
-
 /* Typography Hierarchy */
-.ntb-h1 { font-size: 40px; font-weight: 700; line-height: 48px; color: var(--navy); }
-.ntb-h2 { font-size: 32px; font-weight: 700; line-height: 40px; color: var(--navy); }
-.ntb-h3 { font-size: 24px; font-weight: 700; line-height: 32px; color: var(--navy); }
-.ntb-h4 { font-size: 18px; font-weight: 700; line-height: 26px; color: var(--navy); }
-.ntb-body { font-size: 15px; line-height: 24px; }
-.ntb-caption { font-size: 12px; }
-.ntb-muted { color: var(--text-muted); }
+.ntb-h2 {
+  font-size: var(--fs-8xl);
+  font-weight: var(--fw-bold);
+  line-height: 40px;
+  color: var(--navy);
+}
+
+.ntb-h4 {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: 26px;
+  color: var(--navy);
+}
+
+.ntb-body {
+  font-size: var(--fs-lg);
+  line-height: 24px;
+}
+
+.ntb-caption {
+  font-size: var(--fs-sm);
+}
+
+.ntb-muted {
+  color: var(--text-muted);
+}
 
 .ntb-eyebrow {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-bold);
   text-transform: uppercase;
   letter-spacing: 0.10em;
   color: var(--orange);
@@ -77,16 +81,16 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 24px;
+  padding: var(--space-2-5) var(--space-6);
   background: var(--orange);
   color: var(--white);
   font-family: 'Noto Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
   border: 2px solid var(--orange);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: background var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-fast);
 }
 
 .ntb-btn-primary:hover {
@@ -101,16 +105,16 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 24px;
+  padding: var(--space-2-5) var(--space-6);
   background: transparent;
   color: var(--navy);
   font-family: 'Noto Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
   border: 2px solid var(--navy);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-normal);
 }
 
 .ntb-btn-outline:hover {
@@ -122,16 +126,16 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 28px;
+  padding: var(--space-3) var(--space-7);
   background: var(--white);
   color: var(--navy);
   font-family: 'Noto Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.15s;
+  transition: box-shadow var(--transition-normal), transform var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -141,5 +145,32 @@ img {
   color: var(--navy);
 }
 
-.ntb-btn-lg { padding: 14px 36px; font-size: 16px; }
-.ntb-btn-sm { padding: 6px 14px; font-size: 13px; }
+.ntb-btn-lg {
+  padding: var(--space-3-5) 36px;
+  font-size: var(--fs-xl);
+}
+
+.ntb-btn-sm {
+  padding: var(--space-1-5) var(--space-3-5);
+  font-size: var(--fs-base);
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 1920px) {
+  .container {
+    padding-right: 15%;
+    padding-left: 15%;
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+
+  .ntb-h2 {
+    font-size: var(--fs-6xl);
+    line-height: 34px;
+  }
+}

@@ -31,6 +31,22 @@ const FlightResults = (() => {
     return AIRLINE_COLORS[code] || AIRLINE_COLORS.default;
   }
 
+  function getSearchDepartureDate() {
+    const depStr = searchParams.get('departure') || '';
+    if (!depStr) return 'Oct 12';
+    const d = new Date(depStr);
+    if (isNaN(d)) return depStr;
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+  }
+
+  function getSearchReturnDate() {
+    const retStr = searchParams.get('return') || '';
+    if (!retStr) return 'Oct 19';
+    const d = new Date(retStr);
+    if (isNaN(d)) return retStr;
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+  }
+
   async function init() {
     searchParams = new URLSearchParams(window.location.search);
     const fromCity = searchParams.get('from') || 'New Delhi';
@@ -63,7 +79,7 @@ const FlightResults = (() => {
     allFlights = await window.FlightDataService.getFlights();
 
     setupModifySearch();
-    setupMobileFilterDrawer();   // ✅ NAYA
+    setupMobileFilterDrawer();
     setupSortChips();
     setupClearAllChips();
     setupFilters();
@@ -72,13 +88,12 @@ const FlightResults = (() => {
     window.addEventListener('ntb:currency-changed', () => {
       buildDynamicStopsFilter();
       buildDynamicAirlineFilter();
-      renderFlightList(currentFilteredFlights);
+      renderFlightList(currentFilteredFlights, {
+        hasSearch: Boolean((searchParams.get('fromCode') || '').trim() || (searchParams.get('toCode') || '').trim())
+      });
     });
   }
 
-  // ============================================================
-  // ✅ MOBILE FILTER DRAWER
-  // ============================================================
   function setupMobileFilterDrawer() {
     const openBtn = document.getElementById('openFiltersBtn');
     const closeBtn = document.getElementById('closeFiltersBtn');
@@ -86,7 +101,6 @@ const FlightResults = (() => {
     const filters = document.getElementById('resultsFilters');
     if (!filters) return;
 
-    // Create backdrop
     let backdrop = document.querySelector('.ntb-filter-drawer-backdrop');
     if (!backdrop) {
       backdrop = document.createElement('div');
@@ -118,9 +132,6 @@ const FlightResults = (() => {
     });
   }
 
-  // ============================================================
-  // MODIFY SEARCH — Top Slide-Down Panel
-  // ============================================================
   function setupModifySearch() {
     const modifyBtn = document.getElementById('modifySearch');
     const panel = document.getElementById('modifySearchPanel');
@@ -132,16 +143,16 @@ const FlightResults = (() => {
       document.body.appendChild(backdrop);
     }
 
-       function openPanel() {
+    function openPanel() {
       if (panel) panel.classList.add('open');
       if (backdrop) backdrop.classList.add('open');
-      document.body.classList.add('ntb-modify-open');   // ✅ NAYA
+      document.body.classList.add('ntb-modify-open');
     }
 
     function closePanel() {
       if (panel) panel.classList.remove('open');
       if (backdrop) backdrop.classList.remove('open');
-      document.body.classList.remove('ntb-modify-open'); // ✅ NAYA
+      document.body.classList.remove('ntb-modify-open');
     }
 
     if (modifyBtn) {
@@ -478,6 +489,7 @@ const FlightResults = (() => {
   function applyFiltersAndRender() {
     const fromQuery = (searchParams.get('fromCode') || '').toUpperCase().trim();
     const toQuery = (searchParams.get('toCode') || '').toUpperCase().trim();
+    const hasSearch = Boolean(fromQuery || toQuery);
 
     let filtered = allFlights.filter(flight => {
       if (fromQuery || toQuery) {
@@ -557,7 +569,7 @@ const FlightResults = (() => {
     }
 
     currentFilteredFlights = filtered;
-    renderFlightList(filtered);
+    renderFlightList(filtered, { hasSearch: hasSearch });
   }
 
   function handleSelectClick(e) {
@@ -580,7 +592,8 @@ const FlightResults = (() => {
     window.location.href = `booking.html?${params.toString()}`;
   }
 
-  function renderFlightList(flights) {
+  function renderFlightList(flights, options) {
+    options = options || {};
     const listContainer = document.querySelector('.ntb-results-list');
     if (!listContainer) return;
 
@@ -590,29 +603,67 @@ const FlightResults = (() => {
     }
 
     const trip = searchParams.get('trip') || 'roundtrip';
+    const hasSearch = options.hasSearch || false;
 
     const spinner = document.getElementById('loadingSpinner');
     if (spinner) spinner.remove();
 
+    // ✅ 2 ALAG EMPTY STATES
     if (flights.length === 0) {
-      listContainer.innerHTML = `
-        <div class="ntb-empty-state">
-          <i class="bi bi-airplane" aria-hidden="true"></i>
-          <h3>No flights match your filters</h3>
-          <p>Try clearing some filters or changing your travel dates to see more flight options.</p>
-          <button type="button" class="ntb-btn-primary" onclick="document.getElementById('resetFilters')?.click()">Reset all filters</button>
-        </div>
-      `;
+      let emptyHtml = '';
+
+      if (hasSearch) {
+        const fromCity = searchParams.get('from') || 'your origin';
+        const toCity = searchParams.get('to') || 'your destination';
+        emptyHtml = `
+          <div class="ntb-empty-state">
+            <i class="bi bi-airplane" aria-hidden="true"></i>
+            <h3>No flights found for this route</h3>
+            <p>We couldn't find any flights for <strong>${fromCity}</strong> → <strong>${toCity}</strong>.</p>
+            <p>Try changing your travel dates or choosing a different route.</p>
+            <a href="index.html" class="ntb-btn-primary">Search again</a>
+          </div>
+        `;
+      } else {
+        emptyHtml = `
+          <div class="ntb-empty-state">
+            <i class="bi bi-funnel" aria-hidden="true"></i>
+            <h3>No flights match your filters</h3>
+            <p>Try clearing some filters to see more flight options.</p>
+            <button type="button" class="ntb-btn-primary" onclick="document.getElementById('resetFilters')?.click()">Reset all filters</button>
+          </div>
+        `;
+      }
+
+      listContainer.innerHTML = emptyHtml;
       return;
     }
 
+    const sponsoredIndex = flights.findIndex((flight) => isSingleAirlineFlight(flight, trip));
     let cardsHtml = '';
     flights.forEach((flight, index) => {
-      const isSponsored = index === 0;
+      const isSponsored = index === sponsoredIndex;
       cardsHtml += renderFlightCard(flight, trip, isSponsored);
     });
 
     listContainer.innerHTML = cardsHtml;
+  }
+
+  function isSingleAirlineFlight(flight, trip) {
+    const depLeg = flight.legs && flight.legs[0] ? flight.legs[0] : flight;
+    const retLeg = flight.legs && flight.legs[1] ? flight.legs[1] : null;
+
+    if (trip === 'oneway') return true;
+    if (!retLeg) return false;
+
+    const depCode = (depLeg.airlineCode || '').trim().toUpperCase();
+    const retCode = (retLeg.airlineCode || '').trim().toUpperCase();
+
+    if (depCode && retCode) return depCode === retCode;
+
+    const depName = (depLeg.airline || '').trim().toLowerCase();
+    const retName = (retLeg.airline || '').trim().toLowerCase();
+    return Boolean(depName && retName && depName === retName);
   }
 
   function renderFlightCard(flight, trip, isSponsored) {
@@ -629,87 +680,94 @@ const FlightResults = (() => {
       ? (retLeg.arrivalCity || retLeg.arrivalCode)
       : (depLeg.arrivalCity || depLeg.arrivalCode);
 
+    const searchDepDate = getSearchDepartureDate();
+    const searchRetDate = getSearchReturnDate();
+
     const depRowHtml = `
-      <div class="ntb-sponsored-leg">
-        <div class="ntb-sponsored-leg-row">
-          <div class="ntb-sponsored-leg-logo">
+      <div class="ntb-resultcard-leg">
+        <div class="ntb-resultcard-leg-row">
+          <div class="ntb-resultcard-leg-logo">
             <img src="${getAirlineLogo(depLeg.airlineCode)}" alt="${depLeg.airline}"
                  onerror="this.src='https://placehold.co/40x40/1e293b/38bdf8?text=${depLeg.airlineCode}'">
           </div>
-          <div class="ntb-sponsored-time">
+          <div class="ntb-resultcard-time">
             <b>${formatTime12(depLeg.departureTime)}</b>
-            <small><b>${depLeg.departureCode}</b> · ${depLeg.departureDate || 'Oct 12'}</small>
+            <small><b>${depLeg.departureCode}</b> · ${searchDepDate}</small>
           </div>
-          <div class="ntb-sponsored-track">
+          <div class="ntb-resultcard-track">
             <b>${depLeg.duration}</b>
             <span class="${depLeg.stops > 0 ? 'has-stop' : ''}">${depLeg.stopInfo}</span>
           </div>
-          <div class="ntb-sponsored-time">
+          <div class="ntb-resultcard-time">
             <b>${formatTime12(depLeg.arrivalTime)}</b>
-            <small><b>${depLeg.arrivalCode}</b> · ${depLeg.arrivalDate || 'Oct 12'}</small>
+            <small><b>${depLeg.arrivalCode}</b> · ${searchDepDate}</small>
           </div>
         </div>
       </div>
     `;
 
     const retRowHtml = (trip === 'roundtrip' && retLeg) ? `
-      <div class="ntb-sponsored-leg">
-        <div class="ntb-sponsored-leg-row">
-          <div class="ntb-sponsored-leg-logo">
+      <div class="ntb-resultcard-leg">
+        <div class="ntb-resultcard-leg-row">
+          <div class="ntb-resultcard-leg-logo">
             <img src="${getAirlineLogo(retLeg.airlineCode)}" alt="${retLeg.airline}"
                  onerror="this.src='https://placehold.co/40x40/1e293b/38bdf8?text=${retLeg.airlineCode}'">
           </div>
-          <div class="ntb-sponsored-time">
+          <div class="ntb-resultcard-time">
             <b>${formatTime12(retLeg.departureTime)}</b>
-            <small><b>${retLeg.departureCode}</b> · ${retLeg.departureDate || 'Oct 19'}</small>
+            <small><b>${retLeg.departureCode}</b> · ${searchRetDate}</small>
           </div>
-          <div class="ntb-sponsored-track">
+          <div class="ntb-resultcard-track">
             <b>${retLeg.duration}</b>
             <span class="${retLeg.stops > 0 ? 'has-stop' : ''}">${retLeg.stopInfo}</span>
           </div>
-          <div class="ntb-sponsored-time">
+          <div class="ntb-resultcard-time">
             <b>${formatTime12(retLeg.arrivalTime)}</b>
-            <small><b>${retLeg.arrivalCode}</b> · ${retLeg.arrivalDate || 'Oct 19'}</small>
+            <small><b>${retLeg.arrivalCode}</b> · ${searchRetDate}</small>
           </div>
         </div>
       </div>
     ` : '';
 
     if (isSponsored) {
+      const promoAirlineName = depLeg.airline;
+      const promoAirlineCode = depLeg.airlineCode;
+      const promoAirlineColor = getAirlineColor(promoAirlineCode);
+
       return `
-        <article class="ntb-sponsored-card" style="border-color: ${airlineColor};" data-flight-id="${flight.id}">
-          <div class="ntb-sponsored-banner" style="background: ${airlineColor};">
-            <div class="ntb-sponsored-banner-left">
-              <div class="ntb-sponsored-logo">
-                <img src="${getAirlineLogo(airlineCode)}" alt="${airlineName}"
-                     onerror="this.src='https://placehold.co/50x50/ffffff/1e293b?text=${airlineCode}'">
+        <article class="ntb-resultcard-card" style="border-color: ${promoAirlineColor};" data-flight-id="${flight.id}">
+          <div class="ntb-resultcard-banner" style="background: ${promoAirlineColor};">
+            <div class="ntb-resultcard-banner-left">
+              <div class="ntb-resultcard-logo">
+                <img src="${getAirlineLogo(promoAirlineCode)}" alt="${promoAirlineName}"
+                     onerror="this.src='https://placehold.co/50x50/ffffff/1e293b?text=${promoAirlineCode}'">
               </div>
-              <div class="ntb-sponsored-text">
-                <h4>Fly to ${destCity} with ${airlineName}</h4>
+              <div class="ntb-resultcard-text">
+                <h4>Fly to ${destCity} with ${promoAirlineName}</h4>
                 <p>Enjoy flexibility and peace of mind if plans change.</p>
               </div>
             </div>
-            <div class="ntb-sponsored-banner-right">
-              <span class="ntb-sponsored-label">
+            <div class="ntb-resultcard-banner-right">
+              <span class="ntb-resultcard-label">
                 Sponsored <i class="bi bi-info-circle" aria-hidden="true"></i>
               </span>
-              <span class="ntb-sponsored-more">More info <i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+              <span class="ntb-resultcard-more">More info <i class="bi bi-chevron-down" aria-hidden="true"></i></span>
             </div>
           </div>
-          <div class="ntb-sponsored-body">
-            <div class="ntb-sponsored-legs">
-              <div class="ntb-sponsored-leg-name">${depLeg.airline}${retLeg && retLeg.airline !== depLeg.airline ? ', ' + retLeg.airline : ''}</div>
+          <div class="ntb-resultcard-body">
+            <div class="ntb-resultcard-legs">
+              <div class="ntb-resultcard-leg-name">${promoAirlineName}</div>
               ${depRowHtml}
               ${retRowHtml}
             </div>
-            <div class="ntb-sponsored-cta">
-              <small>Book with ${airlineName} from</small>
+            <div class="ntb-resultcard-cta">
+              <small>Book directly with airline</small>
               <strong>${formattedPrice}</strong>
               <small>per adult</small>
-              <button style="background: ${airlineColor};"
+              <button style="background: ${promoAirlineColor};"
                       data-select-flight="${flight.id}"
                       data-sponsored="true"
-                      data-airline-name="${airlineName}"
+                      data-airline-name="${promoAirlineName}"
                       data-price="${formattedPrice}">
                 Select <i class="bi bi-arrow-right" aria-hidden="true"></i>
               </button>
@@ -720,15 +778,15 @@ const FlightResults = (() => {
     }
 
     return `
-      <article class="ntb-sponsored-card" data-flight-id="${flight.id}">
-        <div class="ntb-sponsored-body">
-          <div class="ntb-sponsored-legs">
-            <div class="ntb-sponsored-leg-name">${depLeg.airline}${retLeg && retLeg.airline !== depLeg.airline ? ', ' + retLeg.airline : ''}</div>
+      <article class="ntb-resultcard-card" data-flight-id="${flight.id}">
+        <div class="ntb-resultcard-body">
+          <div class="ntb-resultcard-legs">
+            <div class="ntb-resultcard-leg-name">${depLeg.airline}${retLeg && retLeg.airline !== depLeg.airline ? ', ' + retLeg.airline : ''}</div>
             ${depRowHtml}
             ${retRowHtml}
           </div>
-          <div class="ntb-sponsored-cta">
-            <small>Book with ${airlineName} from</small>
+          <div class="ntb-resultcard-cta">
+            <small>from 8 websites</small>
             <strong>${formattedPrice}</strong>
             <small>per adult</small>
             <button class="ntb-btn-primary"

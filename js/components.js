@@ -4,10 +4,44 @@
  * 1. Header (components/header.html)
  * 2. Search Form (components/search-form.html)
  * 3. Footer (components/footer.html)
+ * 4. Airline Logo Slider (components/airline-slider.html)
  */
 
 const ComponentLoader = (() => {
+  const airlines = [
+    ['Air France', 'airfrance'],
+    ['Air India', 'airindia'],
+    ['Air India Express', 'airindiaexpress'],
+    ['Akasa Air', 'akasaair'],
+    ['American Airlines', 'americanairline'],
+    ['British Airways', 'britishairways'],
+    ['Delta', 'delta'],
+    ['Emirates', 'emirates'],
+    ['Ethiopian Airlines', 'ethiopianairlines'],
+    ['Etihad Airways', 'etihadairways'],
+    ['Finnair', 'finnair'],
+    ['flydubai', 'flydubai'],
+    ['flynas', 'flynas'],
+    ['Gulf Air', 'gulfair'],
+    ['IndiGo', 'indigo'],
+    ['ITA Airways', 'itaairways'],
+    ['Japan Airlines', 'japanairlines'],
+    ['KLM', 'klm'],
+    ['LOT Polish Airlines', 'lot'],
+    ['Lufthansa', 'lufthansa'],
+    ['Oman Air', 'omanair'],
+    ['Qatar Airways', 'qatarairways'],
+    ['Saudia', 'saudia'],
+    ['SpiceJet', 'spicejet'],
+    ['SWISS', 'swiss'],
+    ['Thai Airways', 'thai'],
+    ['Turkish Airlines', 'turkishairlines'],
+    ['Virgin Atlantic', 'virginatlantic'],
+    ['Vistara', 'vistara']
+  ];
+
   const templates = {
+    'airline-slider': '<div class="ntb-airlines-slider" role="region" aria-label="Airline logos" tabindex="0"></div>',
     header: `
       <nav class="ntb-navbar" id="mainNav">
         <div class="container">
@@ -23,7 +57,7 @@ const ComponentLoader = (() => {
             </a>
 
             <div class="ntb-nav-actions">
-              <a href="index.html#faqs" class="ntb-nav-help"><i class="bi bi-question-circle me-1" aria-hidden="true"></i><span class="ntb-nav-help-text">Help</span></a>
+              <a href="contact.html" class="ntb-nav-help"><i class="bi bi-question-circle me-1" aria-hidden="true"></i><span class="ntb-nav-help-text">Help</span></a>
               <div class="ntb-currency-wrap">
                 <button class="ntb-currency-trigger" id="currencyTrigger" type="button" aria-expanded="false" aria-controls="currencyMenu">
                   <i class="bi bi-globe2 me-1" aria-hidden="true"></i><span id="selectedCurrency">INR</span><i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
@@ -165,57 +199,29 @@ const ComponentLoader = (() => {
     `,
 
     footer: `
-      <footer class="ntb-footer">
+      <footer class="ntb-footer ntb-footer-centered">
         <div class="container">
-          <div class="row gy-5">
-            <div class="col-lg-4">
+          <div class="ntb-footer-centered-main">
+            <a class="ntb-footer-brand" href="index.html" aria-label="Nowtobook home">
               <img src="assest/logo/Nowtobook_logo_white.svg" alt="Nowtobook" class="ntb-footer-logo" />
-              <p class="ntb-body ntb-footer-tagline mt-3">
-                India's smartest flight comparison platform. We help you compare 500+ airlines and booking sites in seconds.
-              </p>
-              <div class="ntb-socials mt-4">
-                <a href="#" class="ntb-social" aria-label="Follow us on Twitter"><i class="bi bi-twitter-x" aria-hidden="true"></i></a>
-                <a href="#" class="ntb-social" aria-label="Follow us on Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
-                <a href="#" class="ntb-social" aria-label="Follow us on LinkedIn"><i class="bi bi-linkedin" aria-hidden="true"></i></a>
-                <a href="#" class="ntb-social" aria-label="Follow us on Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
-              </div>
-            </div>
-            <div class="col-6 col-lg-2 offset-lg-1">
-              <h6 class="ntb-footer-head">Product</h6>
-              <ul class="ntb-footer-links">
-                <li><a href="index.html">Flight Search</a></li>
-                <li><a href="#">Price Alerts</a></li>
-                <li><a href="#">Flexible Dates</a></li>
-                <li><a href="#">Multi-City</a></li>
-              </ul>
-            </div>
-            <div class="col-6 col-lg-2">
-              <h6 class="ntb-footer-head">Company</h6>
-              <ul class="ntb-footer-links">
-                <li><a href="#">About</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Press</a></li>
-              </ul>
-            </div>
-            <div class="col-6 col-lg-2">
-              <h6 class="ntb-footer-head">Support</h6>
-              <ul class="ntb-footer-links">
-                <li><a href="#">Help Centre</a></li>
-                <li><a href="#">Contact Us</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Terms</a></li>
-              </ul>
-            </div>
+            </a>
+            <p class="ntb-body ntb-footer-tagline">
+              At Nowtobook, we take the stress out of travel planning and make it easy for you to create unforgettable memories.
+              Compare flights, explore travel guides, and plan your next journey with confidence.
+            </p>
+            <nav class="ntb-footer-nav" aria-label="Footer navigation">
+              <a href="about.html">About Us</a>
+              <a href="categories.html">Categories</a>
+              <a href="contact.html">Contact Us</a>
+              <a href="privacy.html">Privacy Policy</a>
+              <a href="terms.html">Terms</a>
+              <a href="sitemap.html">Sitemap</a>
+            </nav>
           </div>
           <div class="ntb-footer-bottom">
             <p class="ntb-caption ntb-footer-copyright mb-0">
               © 2026 Nowtobook. All rights reserved. We are a comparison service — bookings complete on partner sites.
             </p>
-            <div class="ntb-footer-badges">
-              <span class="ntb-badge-foot"><i class="bi bi-shield-lock-fill me-1" aria-hidden="true"></i>Secure</span>
-              <span class="ntb-badge-foot"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>No Fees</span>
-            </div>
           </div>
         </div>
       </footer>
@@ -244,7 +250,27 @@ const ComponentLoader = (() => {
       initHeader(options);
     }
 
+    if (name === 'airline-slider') {
+      initAirlineSlider(el);
+    }
+
     return el;
+  }
+
+  function initAirlineSlider(el) {
+    const items = airlines.map(([name, logo]) => `
+      <div class="ntb-airline">
+        <img src="assest/airline/${logo}.svg" alt="" loading="lazy">
+        <span>${name}</span>
+      </div>
+    `).join('');
+
+    el.innerHTML = `
+      <div class="ntb-airlines-track">
+        <div class="ntb-airlines-group">${items}</div>
+        <div class="ntb-airlines-group" aria-hidden="true">${items}</div>
+      </div>
+    `;
   }
 
   async function loadAll() {
@@ -285,6 +311,11 @@ const ComponentLoader = (() => {
         });
       }
     }
+
+    await Promise.all(Array.from(
+      document.querySelectorAll('[data-component="airline-slider"]'),
+      target => load('airline-slider', target)
+    ));
 
     const footerEl = document.getElementById('site-footer') || document.querySelector('[data-component="footer"]');
     if (footerEl) {
